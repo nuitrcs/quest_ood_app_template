@@ -1,16 +1,11 @@
 ---
-name: Lumerical
+name: Example VNC App
 icon: fa://desktop
 category: Interactive Apps
 subcategory: GUIs
 role: batch_connect
 description: |
-  This app will launch the [Lumerical] GUI on the [Quest cluster].
+  This app will launch the [Example VNC App] GUI on the [Quest cluster].
 
-  Lumerical on Quest is restricted to authorized groups only, contact quest-help@northwestern.edu for assistance getting added to the Lumerical license if your PI is one of Professor Hooman, Odom, Swearer, Stern, or Schatz.
-
-  Once you have been added, you can specify the license location (server `quest.ci.northwestern.edu`, port 40000) either using the graphical interface or [non-graphically].
-
-  [Lumerical]: https://www.lumerical.com/
+  [Example VNC App]: https://www.lumerical.com/
   [Quest cluster]: https://www.it.northwestern.edu/departments/it-services-support/research/computing/quest/index.html
-  [non-graphically]: https://optics.ansys.com/hc/en-us/articles/360025358714
