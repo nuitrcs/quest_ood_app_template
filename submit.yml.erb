@@ -1,0 +1,96 @@
+<%
+  groups = OodSupport::User.new.groups.map(&:name).drop(1)
+
+  # your image location will differ
+  ppn = num_cores.blank? ? 1 : num_cores.to_i
+  walltime = (bc_num_hours.to_i * 60)
+%>
+---
+batch_connect:
+  template: vnc
+  websockify_cmd: '/usr/bin/websockify'
+  script_wrapper: |
+    module purge
+    module load singularity
+    cat << "CTRSCRIPT" > container.sh
+    export PATH="$PATH:/opt/TurboVNC/bin"
+    %s
+    CTRSCRIPT
+
+    # Where is this container on Quest
+    export container_image=/software/openondemand/somecontainer.sif
+
+    # All our software in /software so have to bind that
+    export SING_BINDS="--bind /software:/software --bind /hpc/software:/hpc/software"
+
+    ## bind some extra stuff to be able to talk to slurm from within the container
+    export SING_BINDS="$SING_BINDS -B /etc/passwd -B /etc/slurm -B `which sbatch ` -B `which srun ` -B `which sacct ` -B `which scontrol ` -B `which salloc ` -B /usr/lib64/slurm/ -B /usr/lib64/libmunge.so.2 -B /usr/lib64/libmunge.so.2.0.0 -B /usr/lib64/libpmi2.so -B /usr/lib64/libpmi2.so.0 -B /usr/lib64/libpmi2.so.0.0.0 -B /usr/lib64/libpmi.so -B /usr/lib64/libpmi.so.0 -B /usr/lib64/libpmi.so.0.0.0 -B /run"
+
+    ## bind some extra stuff to be able to talk to slurm from within the container
+    export SING_BINDS="$SING_BINDS -B /usr/local/pmix -B /usr/local/hwloc -B /usr/local/ucx-1.13.0 -B /usr/local/ucx-1.10.0 -B /usr/local/ucx-1.8.1 -B /usr/local/spack -B /usr/local/spack_v20d1 -B /usr/local/libevent/ " 
+
+    # only bind /kellogg is individual is part of kellogg group
+    export SING_BINDS="$SING_BINDS <%= groups.include?('kellogg') ? "--bind /kellogg/:/kellogg/" : "" %>"
+
+    # only bind /scratch/<netid> if individual has a scratch space
+    export SING_BINDS="$SING_BINDS <%= File.directory?("/scratch/#{User.new.name}") ? "--bind /scratch/#{User.new.name}:/scratch/#{User.new.name}" : "" %>"
+
+    # Only bind projects directories that the user would have access to based on their unix groups
+    <%- groups.each do |group| %>
+    export SING_BINDS="$SING_BINDS <%= File.directory?("/projects/#{group}") ? "--bind /projects/#{group}:/projects/#{group}" : "" %>"
+    <%- end %>
+
+    # Need to add the --nv flag if we are running on a GPU
+    <%- if gres_value != "" %>
+    export SING_GPU="--nv"
+    <%- else %>
+    export SING_GPU=""
+    <%- end %>
+
+    singularity exec $SING_GPU $SING_BINDS "${container_image}" /bin/bash container.sh
+
+  header: | 
+    #!/bin/bash
+        . ~/.bashrc
+
+script:
+   <%- if user_email != "" %>
+   email_on_started: true
+   <%- end %>
+   native:
+     # What partition is the user submitting to
+     - "--partition"
+     - "<%= slurm_partition %>"
+     # Under what account is the user submitting this job
+     - "--account"
+     - "<%= slurm_account %>"
+     # How much time (in hours)
+     - "--time"
+     - "<%= walltime %>"
+     # How many nodes (always 1)
+     <%- if number_of_nodes != "" %>
+     - "--nodes"
+     - "<%= number_of_nodes %>"
+     <%- else %>
+     - "--nodes"
+     - "1"
+     <%- end %>
+     # How many CPUs
+     - "--ntasks-per-node"
+     - "<%= ppn %>"
+     # How much memory
+     - "--mem"
+     - "<%= memory_per_node %>G"
+     # Job Name
+     - "--job-name"
+     - "<%= job_name %>"
+     # If the user supplies an e-mail, then they will get an e-mail when the job begins
+     <%- if user_email != "" %>
+     - "--mail-user"
+     - "<%= user_email %>"
+     <%- end %>
+     # If the user requested a GPU, then we need to add this argument to our job submit command
+     <%- if gres_value != "" %>
+     - "--gres"
+     - "<%= gres_value %>"
+     <%- end %>
