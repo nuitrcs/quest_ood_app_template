@@ -7,5 +7,5 @@ role: batch_connect
 description: |
   This app will launch the [Example VNC App] GUI on the [Quest cluster].
 
-  [Example VNC App]: https://www.lumerical.com/
+  [Example VNC App]: https://services.northwestern.edu/TDClient/30/Portal/KB/ArticleDet?ID=2234
   [Quest cluster]: https://www.it.northwestern.edu/departments/it-services-support/research/computing/quest/index.html
