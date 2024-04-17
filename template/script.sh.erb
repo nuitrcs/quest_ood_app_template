@@ -11,6 +11,7 @@ OS_NAME=`grep -E '^(NAME)=' /etc/os-release`
 #
 
 if [[ $OS_NAME =~ "Ubuntu" ]]
+then
   (
   export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
   export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
@@ -22,7 +23,7 @@ if [[ $OS_NAME =~ "Ubuntu" ]]
   xfce4-panel --sm-client-disable
   ) &
 else
-(
+  (
   export SEND_256_COLORS_TO_REMOTE=1
   export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
   export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
@@ -33,7 +34,7 @@ else
   xsetroot -solid "#D3D3D3"
   xfsettingsd --sm-client-disable
   xfce4-panel --sm-client-disable
-) &
+  ) &
 fi
 
 
