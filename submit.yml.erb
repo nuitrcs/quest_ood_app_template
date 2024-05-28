@@ -17,8 +17,8 @@ batch_connect:
     %s
     CTRSCRIPT
 
-    # Where is this container on Quest
-    export container_image=<FULL-PATH-TO-CONTAINER>
+    # What container are we using
+    export container_image="<%= version %>"
 
     # All our software in /software so have to bind that
     export SING_BINDS="--bind /software:/software --bind /hpc/software:/hpc/software"

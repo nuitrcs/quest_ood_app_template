@@ -30,6 +30,13 @@ form:
   - raw_group_data
 
 attributes:
+  version:
+    widget: select
+    label: "<My Application> version"
+    help: "What version of <My Application> would you like to launch"
+    options:
+      - [ "<My Application> <Version>", "<FULL-PATH-TO-CONTAINER>" ]
+
   bc_num_hours:
     label: "Wall Time (in number of hours)"
     help: |
