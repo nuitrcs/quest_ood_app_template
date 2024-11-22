@@ -1,42 +1,60 @@
 #!/usr/bin/env bash 
   
-# Set working directory to PBS directory 
+# Clean the environment 
+module purge
+
+# Set working directory to HOME
 cd "${HOME}"
 
-# Check the OS of the Contianer
-OS_NAME=`grep -E '^(NAME)=' /etc/os-release`
+# Get Details on the OS of the *container*
+source /etc/os-release
 
 #
 # Launch Xfce Window Manager and Panel
 #
-
-if [[ $OS_NAME =~ "Ubuntu" ]]
-then
-  (
-  export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
-  export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
-  export XDG_CACHE_HOME="$(mktemp -d)"
-  eval $(dbus-launch --sh-syntax)
-  xfwm4 --compositor=off --sm-client-disable &
-  xsetroot -solid "#D3D3D3"
-  xfsettingsd --daemon --sm-client-disable
-  xfce4-panel --sm-client-disable
-  ) &
+#
+if [[ "$ID_LIKE" =~ "fedora" ]]; then
+    if [[ "$VERSION_ID" < "8.0" ]]; then
+        (
+          export SEND_256_COLORS_TO_REMOTE=1
+          export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
+          export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
+          export XDG_CACHE_HOME="$(mktemp -d)"
+          module restore
+          set -x
+          xfwm4 --compositor=off --daemon --sm-client-disable
+          xsetroot -solid "#D3D3D3"
+          xfsettingsd --sm-client-disable
+          xfce4-panel --sm-client-disable
+        ) &
+    else
+        (
+          export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
+          export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
+          export XDG_CACHE_HOME="$(mktemp -d)"
+          eval $(dbus-launch --sh-syntax)
+          xfwm4 --compositor=off --sm-client-disable &
+          xsetroot -solid "#D3D3D3"
+          xfsettingsd --daemon --sm-client-disable
+          xfce4-panel --sm-client-disable
+        ) &
+    fi
 else
-  (
-  export SEND_256_COLORS_TO_REMOTE=1
-  export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
-  export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
-  export XDG_CACHE_HOME="$(mktemp -d)"
-  module restore
-  set -x
-  xfwm4 --compositor=off --daemon --sm-client-disable
-  xsetroot -solid "#D3D3D3"
-  xfsettingsd --sm-client-disable
-  xfce4-panel --sm-client-disable
-  ) &
+    (
+      export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
+      export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
+      export XDG_CACHE_HOME="$(mktemp -d)"
+      eval $(dbus-launch --sh-syntax)
+      xfwm4 --compositor=off --sm-client-disable &
+      xsetroot -solid "#D3D3D3"
+      xfsettingsd --daemon --sm-client-disable
+      xfce4-panel --sm-client-disable
+    ) &
 fi
 
+#
+# Start PROGRAM
+#
 
 set -x
 ### Place Command To Run Program Below Here ###
